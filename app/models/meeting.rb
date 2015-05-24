@@ -6,5 +6,5 @@ class Meeting
   property :start, type: DateTime
   property :end, type: DateTime
 
-  has_many :in, :attendees, type: :attendees, class_name: 'User'
+  has_many :in, :attendees, rel_clas: 'Attends', model_class: User
 end

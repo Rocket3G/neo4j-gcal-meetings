@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
+
   get 'auth/:provider/callback', to: 'sessions#create'
   get 'auth/failure', to: "home#show"
   get 'signout', to: 'sessions#destroy', as: 'signout'
 
   resources :sessions, only: [:create, :destroy]
   resource :home, only: [:show]
+  resources :calendars, only: [:show, :index]
 
   root to: "home#show"
 
