@@ -39,20 +39,51 @@ class SessionsController < ApplicationController
     @meetings = Array.new
 
     @events.each do |e|
-      meeting = Meeting.find_by(id: e.id)
+      meeting = Meeting.find_by(calendarId: e.id)
 
-      puts e.start
+      if (e.start)
+        start = e.start.date_time
+        if (start.nil?)
+          start = e.start.date
+        end
+      end
+      if (e.end)
+        enddate = e.end.date_time
+        if (enddate.nil?)
+          enddate = e.end.date
+        end
+      end
 
       if (meeting.nil?)
         meeting = Meeting.create({
-          :id => e.id,
+          :calendarId => e.id,
           :name => e.summary,
           :description => e.description,
-          :start => e.start,
-          :end => e.end
+          :start => start,
+          :end => enddate
+        })
+      else
+        meeting.update({
+          :name => e.summary,
+          :description => e.description,
+          :start => start,
+          :end => enddate
         })
       end
 
+      e.attendees.each do |attendee|
+        user = User.find_by(email: attendee.email)
+        if (user.nil?)
+          user = User.create(email: attendee.email, name: attendee.display_name)
+        end
+        if (!user.attends.include?(meeting))
+          link = Attends.create(from_node: user, to_node: meeting, status: attendee.responseStatus)
+        end
+
+        if (!user.organizes.include?(meeting) && attendee.organizer)
+          user.organizes << meeting
+        end
+      end
 
       @meetings << meeting
 

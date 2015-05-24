@@ -1,6 +1,6 @@
 class Meeting 
   include Neo4j::ActiveNode
-  property :id, type: Integer
+  property :calendarId, type: String
   property :name, type: String
   property :description, type: String
   property :start, type: DateTime
