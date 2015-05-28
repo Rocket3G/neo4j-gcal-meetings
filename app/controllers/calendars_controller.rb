@@ -23,8 +23,44 @@ class CalendarsController < ApplicationController
   	end
   end
 
+  def test
+    client = Google::APIClient.new
+    client.authorization.access_token = session[:token]
+    service = client.discovered_api('calendar', 'v3')
+    @result = client.execute(
+      :api_method => service.calendar_list.list,
+      :parameters => {},
+      :headers => {'Content-Type' => 'application/json'})
+
+    puts @result
+
+    render :json => @result.data
+  end
+
+  def new
+    client = Google::APIClient.new
+    client.authorization.access_token = session[:token]
+    service = client.discovered_api('calendar', 'v3')
+    @result = client.execute(
+      :api_method => service.calendar_list.list,
+      :parameters => {},
+      :headers => {'Content-Type' => 'application/json'})
+
+    @result.data.items.each do |calendar|
+      c = Calendar.create({
+        :calendarId => calendar.id,
+        :description => calendar.summary,
+        :background => calendar.backgroundColor
+        }) unless Calendar.exists?({calendarId: calendar.id })
+    end
+  end
+
   def show
-  	client = Google::APIClient.new
+
+  end
+
+  def temp
+    client = Google::APIClient.new
     client.authorization.access_token = session[:token]
     service = client.discovered_api('calendar', 'v3')
     @result = client.execute(
@@ -98,8 +134,6 @@ class CalendarsController < ApplicationController
       end
 
       @meetings << meeting
-
     end
-
   end
 end
