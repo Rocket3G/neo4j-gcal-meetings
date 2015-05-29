@@ -1,0 +1,48 @@
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <p>
+      Imported <strong><%= @imported.length %></strong> calendars, containing <strong><%= @meetings.length %></strong> meetings with <strong><%= @users.length %></strong> users.
+    </p>
+    <% @imported.each do |calendar| %>
+    <div class="panel panel-default">
+      <div class="panel-heading calendar" data-colour="<%= calendar.background %>">
+        <h4><%= calendar.description %></h4>
+      </div>
+      <div class="panel-body">
+        <%= calendar.description %>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Organizer</th>
+          </tr>
+        </thead>
+        <% calendar.meetings.each do |meeting| %>
+        <tr>
+          <td><%= meeting.name %></td>
+          <td><%= meeting.organizers.map(&:name).join(', ')%></td>
+        </tr>
+        <% end %>
+      </table>
+    </div>
+    <%end %>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Users</h4>
+      </div>
+      <table class="table table-striped">
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+        </tr>
+        <% @users.each do |user| %>
+        <tr>
+          <td><%=user.name%></td>
+          <td><%=user.email%></td>
+        </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+</div>

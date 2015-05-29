@@ -1,22 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Google Auth Example App</title>
     <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
-    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
     <%= csrf_meta_tags %>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
   </head>
   <body>
-    <div>
-      <% if current_user %>
-        Signed in as <strong><%= current_user.name %></strong>!
-        <%= link_to "Sign out", signout_path, id: "sign_out" %>
-      <% else %>
-        <%= link_to "Sign in with Google", "/auth/google_oauth2", id: "sign_in" %>
-      <% end %>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Google Calendar en graven</a>
+        </div>
+        <div class='collapse navbar-collapse'>
+          <ul class="nav navbar-nav">
+              <li><%= link_to "Calendars", "/calendars", class: "navbar-link" %></li>
+              <li><%= link_to "Graph", "#", class: "navbar-link" %></li>
+              <li><%= link_to "Matrix", "#", class: "navbar-link" %></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <% if current_user %>
+              <li><p class='navbar-text'>Signed in as <strong><%= current_user.name %></strong>!</p></li>
+              <li><p class='navbar-text'><%= link_to "Sign out", signout_path, id: "sign_out", class: "navbar-link" %></p></li>
+            <% else %>
+              <li><p class='navbar-text'><%= link_to "Sign in with Google", "/auth/google_oauth2", id: "sign_in", class: "navbar-link" %></p></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class='container-fluid'>
+      <%= yield %>
     </div>
-    <div>
-    <%= yield %>
-    </div>
+
+    <!-- Scripts -->
+    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
   </body>
 </html>

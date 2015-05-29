@@ -1,0 +1,19 @@
+<%= form_tag "", method: "post", class: "form-horizontal" do %>
+ <div class="col-md-offset-4 col-md-4">
+ <% @calendars.each do |calendar| %>
+  <div class="row">
+    <div class="form-group">
+      <div class="col-md-11 text-right">
+        <%= label :import, calendar.summary, class: "control-label" %>
+      </div>
+      <div class="col-md-1 checkbox">
+        <%= check_box "import", calendar.id %>
+      </div>
+    </div>
+  </div>
+ <% end %>
+ <div class="form-group">
+  <%= button_tag "submit", class: "btn btn-primary pull-right" %>
+ </div>
+ </div>
+<% end %>

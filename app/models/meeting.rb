@@ -1,4 +1,4 @@
-class Meeting 
+class Meeting
   include Neo4j::ActiveNode
   property :calendarId, type: String
   property :name, type: String
@@ -7,4 +7,6 @@ class Meeting
   property :end, type: DateTime
 
   has_many :in, :attendees, rel_clas: 'Attends', model_class: User
+  has_many :in, :organizers, type: "ORGANIZES", model_class: User
+  has_one :out, :calendar, type: "BELONGS", model_class: Calendar
 end

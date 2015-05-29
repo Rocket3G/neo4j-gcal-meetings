@@ -1,26 +1,122 @@
+require 'Digest'
+
 class CalendarsController < ApplicationController
   def index
+    @calendars = Calendar.all
+
   	respond_to do |format|
-  		format.html do
+      format.html do
 
+      end
+    	format.json do
+        render :json => @calendars
   		end
 
-  		format.json do
-  			@users = User.all
-  			nodes = @users.map{|u| {:uuid => u.uuid, :name => u.name, :email => u.email, :model => "User"}}
-  			@meetings = Meeting.all
-  			@meetings.map{|m| {:uuid => m.uuid, :name => m.name, :description => m.description, :start => m.start, :end => m.end, :model => "Meeting"}}.each do |meeting|
-  				nodes << meeting
-  			end
-  			links = []
-
-  			@users.each do |user|
-  				links += user.attends.map { |other| {:source => nodes.find_index{|n| n[:uuid] == user.uuid}, :target => nodes.find_index{|n| n[:uuid] == other.uuid}, :type => "attends"}}
-  				links += user.organizes.map { |other| {:source => nodes.find_index{|n| n[:uuid] == user.uuid}, :target => nodes.find_index{|n| n[:uuid] == other.uuid}, :type => "organizes"}}
-  			end
-	  		render :json => {:nodes => nodes, :links => links}
-  		end
   	end
+  end
+
+  def import
+
+    client = Google::APIClient.new
+    client.authorization.access_token = session[:token]
+    service = client.discovered_api('calendar', 'v3')
+    @result = client.execute(
+      :api_method => service.calendar_list.list,
+      :headers => {'Content-Type' => 'application/json'})
+    @calendars = Array.new
+
+    @result.data.items.each do |calendar|
+      hash = Digest::SHA256.hexdigest calendar.id
+      calendar = Calendar.create({
+        :calendarId => calendar.id,
+        :idHash => hash,
+        :description => calendar.summary,
+        :background => calendar.backgroundColor
+      }) unless Calendar.exists?({idHash: hash})
+      @calendars << calendar
+    end
+
+    if (params.has_key?(:import))
+      @users ||= Array.new
+      @imported ||= Array.new
+
+      params[:import].each do |import|
+
+        if (import[1] == "1") then
+          hash = Digest::SHA256.hexdigest import[0]
+          calendar = Calendar.find_by({idHash: hash})
+          @imported << calendar
+          @result = client.execute(
+            :api_method => service.events.list,
+            :parameters => {
+              'calendarId' => import[0],
+              'fields' => 'items(status,originalStartTime,privateCopy,transparency,locked,creator,guestsCanSeeOtherGuests,organizer,description,htmlLink,recurringEventId,etag,hangoutLink,sequence,kind,anyoneCanAddSelf,updated,attendeesOmitted,endTimeUnspecified,attendees,created,summary,location,gadget,colorId,iCalUID,visibility,start,extendedProperties,end,guestsCanModify,id,guestsCanInviteOthers)'
+            },
+            :headers => {'Content-Type' => 'application/json'})
+          @meetings ||= Array.new
+
+          @result.data.items.each do |event|
+            meeting = Meeting.find_by({calendarId: event.id})
+
+            if (event.start)
+              start = event.start.date_time
+              if (start.nil?)
+                start = event.start.date
+              end
+            end
+            if (event.end)
+              enddate = event.end.date_time
+              if (enddate.nil?)
+                enddate = event.end.date
+              end
+            end
+
+            if (meeting.nil?)
+              meeting = Meeting.create({
+                :calendarId => event.id,
+                :name => event.summary,
+                :description => event.description,
+                :start => start,
+                :end => enddate,
+              })
+            else
+              meeting.update({
+                :name => event.summary,
+                :description => event.description,
+                :start => start,
+                :end => enddate
+              })
+            end
+
+            meeting.calendar = calendar
+
+            event.attendees.each do |attendee|
+              user = User.find_by(email: attendee.email)
+              if (user.nil?)
+                user = User.create(email: attendee.email, name: attendee.display_name)
+              end
+
+              @users << user unless @users.include?(user)
+
+              if (!user.attends.include?(meeting))
+                link = Attends.create(from_node: user, to_node: meeting, status: attendee.responseStatus)
+              end
+
+              if (!user.organizes.include?(meeting) && attendee.organizer)
+                user.organizes << meeting
+              end
+
+              if (!meeting.organizers.include?(user) && attendee.organizer)
+                meeting.organizers << user
+              end
+            end
+            @meetings << meeting
+          end
+
+        end
+      end
+      return render "done"
+    end
   end
 
   def test
@@ -31,8 +127,6 @@ class CalendarsController < ApplicationController
       :api_method => service.calendar_list.list,
       :parameters => {},
       :headers => {'Content-Type' => 'application/json'})
-
-    puts @result
 
     render :json => @result.data
   end
@@ -56,7 +150,23 @@ class CalendarsController < ApplicationController
   end
 
   def show
+    @calendar = Calendar.find_by({idHash: params[:id]})
+    respond_to do |format|
 
+      format.html do
+
+      end
+      format.json do
+
+        @links ||= Array.new
+        @nodes ||= Array.new
+
+
+
+        render :json => {calendar: @calendar, meetings: @calendar.meetings}
+      end
+
+    end
   end
 
   def temp
@@ -70,7 +180,7 @@ class CalendarsController < ApplicationController
 
     @events ||= Array.new
 
-    @result.data.items.each do |e| 
+    @result.data.items.each do |e|
       calendarEvents = client.execute(
         :api_method => service.events.list,
         :parameters => {

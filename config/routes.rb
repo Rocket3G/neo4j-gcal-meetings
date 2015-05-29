@@ -3,17 +3,13 @@ Rails.application.routes.draw do
   get 'auth/:provider/callback', to: 'sessions#create'
   get 'auth/failure', to: "home#show"
   get 'signout', to: 'sessions#destroy', as: 'signout'
-  get 'test', to: 'calendars#test'
 
-  resources :sessions, only: [:create, :destroy]
   resource :home, only: [:show]
-  resources :calendars, only: [:new, :show, :index, :create]
+  resources :calendars, only: [:new, :index, :create, :show]
+
+  match 'import', to: 'calendars#import', as: 'import', via: [:get, :post]
 
   root to: "home#show"
-
-  resources :meetings, only: [:show]
-
-  resources :users, only: [:show]
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

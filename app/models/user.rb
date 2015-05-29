@@ -1,7 +1,9 @@
 class User 
   include Neo4j::ActiveNode
 
-  id_property :email, type: String
+  id_property :personal_id, on: :email
+
+  property :email, type: String
   property :name, type: String
 
   has_many :out, :attends, rel_class: Attends, model_class: Meeting

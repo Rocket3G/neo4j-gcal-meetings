@@ -1,10 +1,10 @@
 class SessionsController < ApplicationController
   def create
-  	#What data comes back from OmniAuth?     
+  	#What data comes back from OmniAuth?
     @auth = request.env["omniauth.auth"]
     #Use the token from the data to request a list of calendars
     @token = @auth["credentials"]["token"]
-    
+
     owner = User.find_by(email: @auth["info"]["email"])
     if (owner.nil?)
       owner = User.create({
@@ -13,17 +13,17 @@ class SessionsController < ApplicationController
       })
     end
 
-    session[:user_id] = owner.uuid
+    session[:user_id] = owner.email
 
     session[:token] = @token
 
-    redirect_to :back
+    redirect_to root_path
 
   end
 
   def destroy
-    session[:token] = nil
-  	session[:user_id] = nil
+    session[:user_id] = nil
+  	session[:email] = nil
   	redirect_to root_path
   end
 end
