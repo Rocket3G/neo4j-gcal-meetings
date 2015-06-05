@@ -9,7 +9,38 @@ class CalendarsController < ApplicationController
 
       end
     	format.json do
-        render :json => @calendars
+        @users ||= Array.new
+        @meetings ||= Array.new
+
+        @calendars.each do |calendar|
+          calendar.meetings.each do |meeting|
+            @meetings << meeting unless @meetings.include?(meeting)
+          end
+        end
+
+        @links ||= Array.new
+        @nodes ||= Array.new
+
+        @meetings.each do |meeting|
+          @nodes << {:id => meeting.id, :name => meeting.name, :model => "meeting"}
+
+          meeting.attendees.each do |user|
+            @users << user unless @nodes.include?(user)
+          end
+        end
+
+        @users.each do |user|
+          @nodes << {:id => user.id, :name => user.name, :model => "user"}
+          user.attends.each do |node|
+            @links << {:source => @nodes.find_index{|n| n[:id] == node.id}, :target => @nodes.find_index{|n| n[:id] == user.id}, :type => "ATTENDS"}
+          end
+          user.organizes.each do |node|
+            @links << {:source => @nodes.find_index{|n| n[:id] == node.id}, :target => @nodes.find_index{|n| n[:id] == user.id}, :type => "ORGANIZES"}
+          end
+
+        end
+
+        render :json => {nodes: @nodes, links: @links}
   		end
 
   	end
@@ -98,6 +129,8 @@ class CalendarsController < ApplicationController
 
               @users << user unless @users.include?(user)
 
+              meeting.attendees << user unless meeting.attendees.include?(user)
+
               if (!user.attends.include?(meeting))
                 link = Attends.create(from_node: user, to_node: meeting, status: attendee.responseStatus)
               end
@@ -150,20 +183,41 @@ class CalendarsController < ApplicationController
   end
 
   def show
+    min = 5
+    max = 10
     @calendar = Calendar.find_by({idHash: params[:id]})
+
+    users = User.all.length
+
     respond_to do |format|
 
       format.html do
 
       end
       format.json do
+        @users ||= Array.new
+        @meetings ||= @calendar.meetings
 
         @links ||= Array.new
         @nodes ||= Array.new
 
+        @meetings.each do |meeting|
+          @nodes << {:id => meeting.id, :name => meeting.name, :model => "meeting", :radius => min + (meeting.attendees.length / users) * (max - min)}
 
+          meeting.attendees.each do |user|
+            @users << user unless @users.include?(user)
+          end
+        end
 
-        render :json => {calendar: @calendar, meetings: @calendar.meetings}
+        @users.each do |user|
+          @nodes << {:id => user.id, :name => user.name, :model => "user", :radius => min + (user.attends.length / @meetings.length) * (max - min)}
+          user.attends.each do |node|
+            @links << {:target => @nodes.find_index{|n| n[:id] == node.id}, :source => @nodes.find_index{|n| n[:id] == user.id}, :type => "ATTENDS"}
+          end
+
+        end
+
+        render :json => {nodes: @nodes, links: @links}
       end
 
     end
