@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Google Auth Example App</title>
+    <title>Neocal graphs</title>
     <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
     <%= csrf_meta_tags %>
     <!-- Latest compiled and minified CSS -->
@@ -26,8 +26,9 @@
         <div class='collapse navbar-collapse'>
           <ul class="nav navbar-nav">
               <li><%= link_to "Calendars", "/calendars", class: "navbar-link" %></li>
-              <li><%= link_to "Graph", "#", class: "navbar-link" %></li>
-              <li><%= link_to "Matrix", "#", class: "navbar-link" %></li>
+              <li><%= link_to "Import", "/import", class: "navbar-link" %></li>
+              <li><%= link_to "Graph", "/graph", class: "navbar-link" %></li>
+              <li><%= link_to "Matrix", "/matrix", class: "navbar-link" %></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <% if current_user %>

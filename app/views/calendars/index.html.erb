@@ -6,7 +6,7 @@
           <p><%= calendar.description %></p>
         </div>
         <div class='panel-footer'>
-          <p><%= link_to "View", calendar_path(calendar) %></p>
+          <p><%= link_to "View", "calendar/#{calendar.idHash}" %><span class="pull-right"><%= link_to "Export", "calendar/#{calendar.idHash}.gexf" %></span></p>
         </div>
       </div>
     </div>

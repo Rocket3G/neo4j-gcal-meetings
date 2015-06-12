@@ -214,6 +214,7 @@ PLATFORMS
 
 DEPENDENCIES
   better_errors
+  builder
   coffee-rails (~> 4.0.0)
   d3-rails
   google-api-client

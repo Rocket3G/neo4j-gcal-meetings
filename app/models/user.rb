@@ -1,4 +1,4 @@
-class User 
+class User
   include Neo4j::ActiveNode
 
   id_property :personal_id, on: :email

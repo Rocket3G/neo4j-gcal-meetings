@@ -5,9 +5,12 @@ Rails.application.routes.draw do
   get 'signout', to: 'sessions#destroy', as: 'signout'
 
   resource :home, only: [:show]
-  resources :calendars, only: [:new, :index, :create, :show]
 
   match 'import', to: 'calendars#import', as: 'import', via: [:get, :post]
+  match 'graph', to: 'calendars#index', as: 'graph', via: [:get]
+  match 'matrix', to: 'matrix#index', as: 'matrix', via: [:get]
+
+  match 'calendar/:id', to: 'calendars#show', via: [:get, :post]
 
   root to: "home#show"
 
