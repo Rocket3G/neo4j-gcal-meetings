@@ -56,9 +56,20 @@ class CalendarsController < ApplicationController
 
         @links ||= Array.new
         @nodes ||= Array.new
+        @nodeMeetings ||= Array.new
 
         @meetings.each do |meeting|
-          @nodes << {:id => meeting.id, :name => meeting.name, :model => "meeting", :weight => meeting.attendees.length}
+            @nodeMeetings << meeting.attendees unless @nodeMeetings.include?(meeting.attendees)
+        end
+
+        @nodeMeetings.each do |nm|
+            puts nm
+        end
+
+        @meetings.each do |meeting|
+
+          @nodes << {:id => meeting.id, :name => meeting.name, :model => "meeting", :weight => 1}
+
 
           meeting.attendees.each do |user|
             if (user.email =~ /@hollandstartup\.com/)

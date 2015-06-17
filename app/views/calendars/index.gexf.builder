@@ -9,7 +9,7 @@ xml.gexf 'xmlns:viz' => 'http://www.gexf.net/1.1draft/viz', :xmlns => 'http://ww
   xml.graph :mode => "dynamic", defaultedgetype: "directed" do |graph|
     graph.nodes do |nodes|
       @nodes.each do |n|
-        nodes.node :id => n[:id], :label => n[:name] do |nn|
+        nodes.node :id => n[:id], :label => n[:name], :weight => n[:weight] do |nn|
           if (n[:model] == "user")
             nn.viz :color, :r => "255", :g => "128", b: "0", a: "1"
             nn.viz :shape, :value => "disc"
